@@ -1,12 +1,12 @@
 // /api/flight.js
-// Usage: GET /api/flight?callsign=EDV5010
+// Usage: GET /api/flight?callsign=EDV5010&hex=A12345
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { callsign } = req.query;
+  const { callsign, hex } = req.query;
   if (!callsign) {
     return res.status(400).json({ error: 'callsign is required' });
   }
@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
   try {
     // 1. Route + airline info from callsign
-    const routeRes = await fetch(`https://hexdb.io/callsign-route?callsign=${clean}`);
+    const routeRes = await fetch(`https://hexdb.io/api/v1/route/icao/${clean}`);
 
     if (!routeRes.ok) {
       return res.status(404).json({ error: 'Flight route not found' });
@@ -41,11 +41,13 @@ export default async function handler(req, res) {
       destRes.ok  ? destRes.json()  : null,
     ]);
 
-    // 3. Also try aircraft lookup by callsign for type/registration info
-    //    hexdb supports hex lookup; callsign→aircraft isn't always available,
-    //    so treat this as best-effort
-    const aircraftRes = await fetch(`https://hexdb.io/api/v1/callsign/${clean}`);
-    const aircraft = aircraftRes.ok ? await aircraftRes.json() : null;
+    // 3. Fetch aircraft info using hex code if provided
+    let aircraft = null;
+    if (hex) {
+      const cleanHex = hex.trim().toUpperCase();
+      const aircraftRes = await fetch(`https://hexdb.io/api/v1/aircraft/${cleanHex}`);
+      aircraft = aircraftRes.ok ? await aircraftRes.json() : null;
+    }
 
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cache-Control', 's-maxage=300'); // routes don't change mid-flight
