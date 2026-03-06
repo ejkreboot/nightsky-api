@@ -6,6 +6,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 's-maxage=300'); // routes don't change mid-flight
+
   const { callsign, hex } = req.query;
   if (!callsign) {
     return res.status(400).json({ error: 'callsign is required' });
@@ -48,9 +51,6 @@ export default async function handler(req, res) {
       const aircraftRes = await fetch(`https://hexdb.io/api/v1/aircraft/${cleanHex}`);
       aircraft = aircraftRes.ok ? await aircraftRes.json() : null;
     }
-
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cache-Control', 's-maxage=300'); // routes don't change mid-flight
 
     return res.status(200).json({
       callsign: clean,
