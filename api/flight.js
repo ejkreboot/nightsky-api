@@ -21,14 +21,28 @@ export default async function handler(req, res) {
     const routeRes = await fetch(`https://hexdb.io/api/v1/route/icao/${clean}`);
 
     if (!routeRes.ok) {
-      return res.status(404).json({ error: 'Flight route not found' });
+      return res.status(200).json({
+        callsign: clean,
+        route: null,
+        routeDataAge: null,
+        origin: null,
+        destination: null,
+        aircraft: null,
+      });
     }
 
     const routeData = await routeRes.json();
     // routeData: { flight, route: "KGRR-KDTW", updatetime }
 
     if (!routeData?.route) {
-      return res.status(404).json({ error: 'No route data for this callsign' });
+      return res.status(200).json({
+        callsign: clean,
+        route: null,
+        routeDataAge: null,
+        origin: null,
+        destination: null,
+        aircraft: null,
+      });
     }
 
     const [originIcao, destIcao] = routeData.route.split('-');
