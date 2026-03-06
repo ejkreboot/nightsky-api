@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    res.setHeader('Access-Control-Allow-Origin', 'https://ejkreboot.github.io');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cache-Control', 's-maxage=10'); // cache 10s at edge
     res.status(200).json(data);
   } catch (err) {
